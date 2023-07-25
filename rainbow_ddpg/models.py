@@ -1,5 +1,6 @@
 import tensorflow as tf
 import tensorflow.contrib as tc
+from tensorflow.keras.applications import ResNet50
 
 
 class Model(object):
@@ -35,12 +36,14 @@ class Actor(Model):
         super(Actor, self).__init__(dense_layer_size, layer_norm, name=name)
         self.nb_actions = nb_actions
         self.conv_size = conv_size
+        self.resnet_model = ResNet50(include_top=False, weights=None, input_shape=(224, 224, 3))
 
     def __call__(self, obs, aux, reuse=False):
         with tf.variable_scope(self.name) as scope:
             if reuse:
                 scope.reuse_variables()
             x = obs
+            
             # Only use the convolutional layers if we are dealing with high-dimensional state.
             if len(obs.shape) > 2:
                 normalizer_fn = tc.layers.layer_norm if self.layer_norm else None
@@ -94,9 +97,17 @@ class Actor(Model):
                         kernel_size=(3, 3),
                         stride=1,
                         normalizer_fn=normalizer_fn)
+                elif self.conv_size == 'resnet':
+                    # Resize x to 224x224x3
+                    x = tf.image.resize_images(x, [224, 224])
+                    x = self.resnet_model(x)
+                    x = tf.layers.flatten(x)
+                    # To 1152
+                    x = tf.layers.dense(x, 1152)
                 else:
                     raise Exception('Unknown size')
-                x = tf.layers.flatten(x)
+                if self.conv_size != 'resnet':
+                    x = tf.layers.flatten(x)
 
             # Concatenate with auxiliary input (eg. joint angles) and create dense layers.
             x = tf.concat([x, aux], axis=-1)
