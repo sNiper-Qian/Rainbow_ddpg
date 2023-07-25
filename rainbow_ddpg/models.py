@@ -1,6 +1,9 @@
 import tensorflow as tf
 import tensorflow.contrib as tc
 from tensorflow.keras.applications import ResNet50
+from baselines import logger
+from tensorflow.keras import layers
+import tensorflow.keras
 
 
 class Model(object):
@@ -25,7 +28,6 @@ class Model(object):
             var for var in self.trainable_vars if 'LayerNorm' not in var.name
         ]
 
-
 class Actor(Model):
     def __init__(self,
                  nb_actions,
@@ -36,14 +38,14 @@ class Actor(Model):
         super(Actor, self).__init__(dense_layer_size, layer_norm, name=name)
         self.nb_actions = nb_actions
         self.conv_size = conv_size
-        self.resnet_model = ResNet50(include_top=False, weights=None, input_shape=(224, 224, 3))
+#         self.resnet_model = self.resnet18(input_shape=(84, 84, 3))
 
     def __call__(self, obs, aux, reuse=False):
         with tf.variable_scope(self.name) as scope:
             if reuse:
                 scope.reuse_variables()
             x = obs
-            
+            logger.info("X shape:{}".format(x.shape))  
             # Only use the convolutional layers if we are dealing with high-dimensional state.
             if len(obs.shape) > 2:
                 normalizer_fn = tc.layers.layer_norm if self.layer_norm else None
@@ -98,12 +100,12 @@ class Actor(Model):
                         stride=1,
                         normalizer_fn=normalizer_fn)
                 elif self.conv_size == 'resnet':
-                    # Resize x to 224x224x3
-                    x = tf.image.resize_images(x, [224, 224])
-                    x = self.resnet_model(x)
-                    x = tf.layers.flatten(x)
-                    # To 1152
-                    x = tf.layers.dense(x, 1152)
+#                     sess.close()
+#                     tf.reset_default_graph()
+                    x = self.resnet18(x)
+#                     x = tf.layers.flatten(x)
+#                     # To 1152
+#                     x = tf.layers.dense(x, 1152)
                 else:
                     raise Exception('Unknown size')
                 if self.conv_size != 'resnet':
@@ -148,7 +150,71 @@ class Actor(Model):
             # Finish with action output (the tanh function normalizes it to be in range [-1, 1]).
             pi = tf.nn.tanh(x)
         return pi, object_conf, gripper, target
+    def res_block(self, inputs, num_filters, stride=1, projection_shortcut=False):
+        shortcut = inputs
 
+        if projection_shortcut:
+            shortcut = tc.layers.conv2d(
+                inputs=inputs,
+                num_outputs=num_filters,
+                kernel_size=1,
+                stride=stride,
+                activation_fn=None,
+                normalizer_fn=None
+            )
+
+        inputs = tc.layers.conv2d(
+            inputs=inputs,
+            num_outputs=num_filters,
+            kernel_size=3,
+            stride=stride
+        )
+
+        inputs = tc.layers.conv2d(
+            inputs=inputs,
+            num_outputs=num_filters,
+            kernel_size=3,
+            activation_fn=None,
+            normalizer_fn=None
+        )
+
+        inputs += shortcut
+        inputs = tf.nn.relu(inputs)
+
+        return inputs
+
+    def resnet18(self, inputs):
+        inputs = tc.layers.conv2d(
+            inputs=inputs,
+            num_outputs=64,
+            kernel_size=7,
+            stride=2
+        )
+
+        inputs = tf.layers.max_pooling2d(
+            inputs=inputs,
+            pool_size=3,
+            strides=2,
+            padding='SAME'
+        )
+
+        inputs = self.res_block(inputs, 64)
+        inputs = self.res_block(inputs, 64)
+
+        inputs = self.res_block(inputs, 128, stride=2, projection_shortcut=True)
+        inputs = self.res_block(inputs, 128)
+
+        inputs = self.res_block(inputs, 256, stride=2, projection_shortcut=True)
+        inputs = self.res_block(inputs, 256)
+
+        inputs = self.res_block(inputs, 512, stride=2, projection_shortcut=True)
+        inputs = self.res_block(inputs, 512)
+
+        inputs = tf.layers.average_pooling2d(inputs, pool_size=2, strides=1)
+        inputs = tf.layers.flatten(inputs)
+        inputs = tf.layers.dense(inputs, units=1152)
+
+        return inputs
 
 class Critic(Model):
     def __init__(
