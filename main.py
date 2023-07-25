@@ -118,7 +118,7 @@ def parse_args():
     parser.add_argument('--noise-type', type=str, default='normal_0.2')
     parser.add_argument('--load-file', type=str, default='')
     parser.add_argument('--save-folder', type=str, default='')
-    parser.add_argument('--conv-size', type=str, default='small')
+    parser.add_argument('--conv-size', type=str, default='resnet')
     parser.add_argument('--num-timesteps', type=int, default=None)
     parser.add_argument('--num-demo-steps', type=int, default=20)
     parser.add_argument('--num-pretrain-steps', type=int, default=2000)
