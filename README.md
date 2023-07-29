@@ -1,19 +1,23 @@
-# Rainbow DDPG
+# Rainbow DDPG with ResNet18 Backbone
 
-This repository contains Rainbow DDPG algorithm from paper Sim-to-Real Reinforcement Learning for Deformable Object Manipulation along with a toy pushing task to demonstrate how to use the code.
+This repository contains a modified version of the Rainbow DDPG algorithm from the paper "Sim-to-Real Reinforcement Learning for Deformable Object Manipulation". In this version, the backbone of actor has been changed to ResNet18. This repository also includes a toy pushing task to demonstrate how to use the code.
 
 ## Instructions
 
-The code was tested on Mac OS with Python3.6. Use of virtualenvs is recommended. To run:
+The code was tested on Ubuntu20.04 with Python3.7. Use of virtualenvs is recommended. To run the training:
 
 ```
 pip install -r requirements.txt
 python main.py
 ```
 
-Runnign a full training may take more than 24 hours on a machine with Nvidia Titan GPU and use a considerable amount of memory.
+Original model: Running a full training (250 epochs) may take more than 24 hours on a machine with Nvidia Titan GPU and use a considerable amount of memory (by authors of the paper).
+After replacing the actor backbone with ResNet18: It takes more than 4 days for running 150 epochs on a machine with RTX 3090.
 
-To run a demonstration of the toy task:
+Results:
+This modification has led to some instability in the learning process compared to the original version (See figure below). Further tuning and optimization may be required to achieve stable learning with the ResNet18 backbone.
+
+Besides, to run a demonstration of the toy task:
 
 ```
 pip install -r requirements.txt
