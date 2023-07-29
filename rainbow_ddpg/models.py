@@ -100,12 +100,7 @@ class Actor(Model):
                         stride=1,
                         normalizer_fn=normalizer_fn)
                 elif self.conv_size == 'resnet':
-#                     sess.close()
-#                     tf.reset_default_graph()
                     x = self.resnet18(x)
-#                     x = tf.layers.flatten(x)
-#                     # To 1152
-#                     x = tf.layers.dense(x, 1152)
                 else:
                     raise Exception('Unknown size')
                 if self.conv_size != 'resnet':

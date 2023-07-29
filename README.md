@@ -1,6 +1,6 @@
 # Rainbow DDPG with ResNet18 Backbone
 
-This repository contains a modified version of the Rainbow DDPG algorithm from the paper "Sim-to-Real Reinforcement Learning for Deformable Object Manipulation". In this version, the backbone of actor has been changed to ResNet18. This repository also includes a toy pushing task to demonstrate how to use the code.
+This repository contains a modified version of the Rainbow DDPG algorithm from the paper "Sim-to-Real Reinforcement Learning for Deformable Object Manipulation". In this version, the backbone of actor has been changed to ResNet18. 
 
 ## Instructions
 
@@ -10,22 +10,14 @@ The code was tested on Ubuntu20.04 with Python3.7. Use of virtualenvs is recomme
 pip install -r requirements.txt
 python main.py
 ```
+## Results
 
-Original model: Running a full training (250 epochs) may take more than 24 hours on a machine with Nvidia Titan GPU and use a considerable amount of memory (by authors of the paper).
-After replacing the actor backbone with ResNet18: It takes more than 4 days for running 150 epochs on a machine with RTX 3090.
+- Original model: According to the authors, running a full training (250 epochs) may take more than 24 hours on a machine with Nvidia Titan GPU and use a considerable amount of memory. The policy ends up with a success rate of around 80%.
+- Replacing the actor backbone with ResNet18: It takes more than 4 days for running 150 epochs on a machine with RTX 3090. The policy still ends up with a success rate of around 80%. See the figure below.
 
-Results:
-This modification has led to some instability in the learning process compared to the original version (See figure below). Further tuning and optimization may be required to achieve stable learning with the ResNet18 backbone.
+Therefore, this modification does not bring any improvement in terms of policy performance compared to the original version. 
 
-Besides, to run a demonstration of the toy task:
-
-```
-pip install -r requirements.txt
-python run_demo.py
-```
-
-Please note that the hyper parameters are not necessarily optimised for the task.
-
+![Learning curve of the modified model](./with_resnet18.png)
 
 
 ## References
