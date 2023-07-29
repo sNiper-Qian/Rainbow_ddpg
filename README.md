@@ -10,6 +10,10 @@ The code was tested on Ubuntu20.04 with Python3.7. Use of virtualenvs is recomme
 pip install -r requirements.txt
 python main.py
 ```
+
+## Modifications
+The main modifications to the original code are in the `rainbow_ddpg\models.py` file, specifically lines 181 to 212.
+
 ## Results
 
 - Original model: According to the authors, running a full training (250 epochs) may take more than 24 hours on a machine with Nvidia Titan GPU and use a considerable amount of memory. The policy ends up with a success rate of around 80%.
