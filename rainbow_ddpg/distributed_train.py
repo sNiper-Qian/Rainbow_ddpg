@@ -175,8 +175,6 @@ class DistributedTrain(object):
         self.nb_eval_steps = nb_eval_steps
 
         self.env_id = env_id
-        
-        self.summary_writer = tf.summary.FileWriter('../logs')
 
     def start(self):
         with tfutil.single_threaded_session() as sess:
@@ -337,7 +335,6 @@ class DistributedTrain(object):
                 "eval_rewards",
                 np.mean(eval_episode_rewards)
                 if eval_episode_rewards else "none")
-            tf.summary.scalar('Reward', np.mean(eval_episode_rewards), step=epoch)
             logger.record_tabular("eval_qs",
                                   np.mean(eval_qs) if eval_qs else "none")
             logger.dump_tabular()
